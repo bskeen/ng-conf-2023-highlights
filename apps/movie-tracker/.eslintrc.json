@@ -9,7 +9,7 @@
           "error",
           {
             "type": "attribute",
-            "prefix": "ngConfHighlights",
+            "prefix": "mt",
             "style": "camelCase"
           }
         ],
@@ -17,7 +17,7 @@
           "error",
           {
             "type": "element",
-            "prefix": "ng-conf-highlights",
+            "prefix": "mt",
             "style": "kebab-case"
           }
         ]

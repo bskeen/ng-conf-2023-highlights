@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@movie-tracker/movie-admin": ["libs/movie-admin/src/index.ts"],
+      "@movie-tracker/movie-search": ["libs/movie-search/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
