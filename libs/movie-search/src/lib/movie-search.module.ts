@@ -8,6 +8,11 @@ import * as fromSearch from './+state/search.reducer';
 import { SearchEffects } from './+state/search.effects';
 import { SearchComponent } from './search/search.component';
 import { SearchGridComponent } from './search-grid/search-grid.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -18,6 +23,11 @@ import { SearchGridComponent } from './search-grid/search-grid.component';
       fromSearch.searchReducer
     ),
     EffectsModule.forFeature([SearchEffects]),
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    ReactiveFormsModule,
   ],
   declarations: [SearchComponent, SearchGridComponent],
 })

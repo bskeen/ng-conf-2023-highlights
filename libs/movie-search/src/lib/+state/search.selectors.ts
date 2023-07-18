@@ -2,42 +2,30 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 import {
   SEARCH_FEATURE_KEY,
   SearchState,
-  searchAdapter,
 } from './search.reducer';
 
 // Lookup the 'Search' feature state managed by NgRx
-export const selectSearchState =
+const selectState =
   createFeatureSelector<SearchState>(SEARCH_FEATURE_KEY);
 
-const { selectAll, selectEntities } = searchAdapter.getSelectors();
-
-export const selectSearchLoaded = createSelector(
-  selectSearchState,
-  (state: SearchState) => state.loaded
+const selectLoadedState = createSelector(
+  selectState,
+  (state: SearchState) => state.loadedState
 );
 
-export const selectSearchError = createSelector(
-  selectSearchState,
+const selectError = createSelector(
+  selectState,
   (state: SearchState) => state.error
 );
 
-export const selectAllSearch = createSelector(
-  selectSearchState,
-  (state: SearchState) => selectAll(state)
+const selectSearchResults = createSelector(
+  selectState,
+  (state: SearchState) => state.movies
 );
 
-export const selectSearchEntities = createSelector(
-  selectSearchState,
-  (state: SearchState) => selectEntities(state)
-);
-
-export const selectSelectedId = createSelector(
-  selectSearchState,
-  (state: SearchState) => state.selectedId
-);
-
-export const selectEntity = createSelector(
-  selectSearchEntities,
-  selectSelectedId,
-  (entities, selectedId) => (selectedId ? entities[selectedId] : undefined)
-);
+export const searchSelectors = {
+  selectState,
+  selectLoadedState,
+  selectError,
+  selectSearchResults
+};

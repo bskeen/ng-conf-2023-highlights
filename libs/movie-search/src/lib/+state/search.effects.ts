@@ -10,9 +10,9 @@ export class SearchEffects {
   searchSubmitted$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(searchGridActions.searchSubmitted),
-      switchMap(({ searchText }) => {
-        
-      })
+      // switchMap(({ searchText }) => {
+
+      // })
     )
   })
 }
