@@ -1,0 +1,6 @@
+<div
+  class="status-container"
+  [class.overtime]="status === timerStatus.overtime"
+  [style.--timer-angle.deg]="timerAngle">
+  <ng-content></ng-content>
+</div>

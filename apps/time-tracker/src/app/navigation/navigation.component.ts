@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { EMPTY, Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
@@ -10,6 +10,9 @@ import { map, shareReplay } from 'rxjs/operators';
 })
 export class NavigationComponent implements OnInit {
   isHandset$: Observable<boolean> = EMPTY;
+
+  @Input()
+  currentRole: 'admin' | 'user' = 'user';
 
   constructor(private breakpointObserver: BreakpointObserver) {}
 

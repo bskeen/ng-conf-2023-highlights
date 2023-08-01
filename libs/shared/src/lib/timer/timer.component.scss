@@ -1,0 +1,38 @@
+$translucent-white: rgba(255, 255, 255, 0.8);
+$transparent-white: rgba(255, 255, 255, 0);
+$translucent-red: rgba(255, 0, 0, 0.8);
+
+:host {
+  --timer-angle: 275deg;
+}
+
+div.status-container{
+  position: relative;
+  width: 200px;
+  height: 200px;
+  &::after {
+    content: "";
+    z-index: 1;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: conic-gradient(
+      $transparent-white,
+      $transparent-white var(--timer-angle),
+      $translucent-white var(--timer-angle),
+      $translucent-white
+    );
+    transition: all 250ms linear;
+  }
+
+  &.overtime::after {
+    background: conic-gradient(
+      $translucent-white,
+      $translucent-white var(--timer-angle),
+      $translucent-red var(--timer-angle),
+      $translucent-red
+    );
+  }
+}

@@ -1,0 +1,10 @@
+<form [formGroup]="loginForm" *ngIf="loginForm?.controls?.['role']">
+  <mat-form-field>
+    <mat-label>Role:</mat-label>
+    <select matNativeControl formControlName="role" required>
+      <option value="admin">Administrator</option>
+      <option value="user">User</option>
+    </select>
+  </mat-form-field>
+  <button mat-raised-button color="primary" (click)="onFormSubmit($event)" [disabled]="!loginForm.valid">Submit</button>
+</form>

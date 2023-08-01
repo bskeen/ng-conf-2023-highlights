@@ -28,3 +28,7 @@ npx nx g @angular/material:ng-add --project=time-tracker --theme=custom --typogr
 npx nx g @angular/material:navigation --project=time-tracker navigation --style=scss
 
 nx g @nx/angular:ngrx-root-store time-tracker --facade=false
+
+nx g @nx/angular:component login --project=time-tracker
+
+nx g @nx/angular:lib view-status

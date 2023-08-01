@@ -1,0 +1,280 @@
+{
+    "pipes": [],
+    "interfaces": [],
+    "injectables": [],
+    "guards": [],
+    "interceptors": [],
+    "classes": [],
+    "directives": [],
+    "components": [
+        {
+            "name": "StatusComponent",
+            "id": "component-StatusComponent-5f39b3fdb6fd713c98adb4437699da319e65c2863467960a53f146c9b2ba990f95eae2e2d1b1c4ecb82675b8e4e82bec00b443f96c242a7319477990099bec0e",
+            "file": "libs/shared/src/lib/status/status.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "time-tracker-status",
+            "styleUrls": [
+                "./status.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./status.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'time-tracker-status',\n  templateUrl: './status.component.html',\n  styleUrls: ['./status.component.scss'],\n})\nexport class StatusComponent {}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": "",
+                    "styleUrl": "./status.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "templateData": "<p>status works!</p>\n"
+        },
+        {
+            "name": "TimerComponent",
+            "id": "component-TimerComponent-a7696974465f834722275aa397892817a3e24ba95dc7882f0d9879eae053e8d3d302131b9f1bbffbef573d4c90f2b59c2dbda36fe41816ed31a6f1900a17e802",
+            "file": "libs/shared/src/lib/timer/timer.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "time-tracker-timer",
+            "styleUrls": [
+                "./timer.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./timer.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "timer",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 51,
+                    "type": "Timer",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "resetStatus",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 78,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        121
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { Timer, TimerStatus } from './timer.models';\n\ntype TimeLeft = {\n  hours: number;\n  minutes: number;\n  seconds: number;\n}\n\n@Component({\n  selector: 'time-tracker-timer',\n  templateUrl: './timer.component.html',\n  styleUrls: ['./timer.component.scss'],\n})\nexport class TimerComponent {\n  /**\n   * @ignore\n   */\n  _startTime?: number;\n\n  /**\n   * @ignore\n   */\n  _endTime?: number;\n\n  /**\n   * @ignore\n   */\n  _duration = 0;\n\n  /**\n   * @ignore\n   */\n  status: TimerStatus = TimerStatus.indeterminate;\n\n  /**\n   * @ignore\n   */\n  timerAngle = 360;\n\n  /**\n   * @ignore\n   */\n  timeLeft: TimeLeft = {\n    hours: 0,\n    minutes: 0,\n    seconds: 0\n  };\n\n  @Input()\n  set timer(value: Timer) {\n    switch (value.type) {\n      case 'countdown':\n        if (value.endTime) {\n          this.status = TimerStatus.complete;\n        } else if (value.startTime && Date.now() - value.startTime.getTime() > value.duration) {\n          this.status = TimerStatus.overtime;\n        } else if (value.startTime) {\n          this.status = TimerStatus.started;\n        } else {\n          this.status = TimerStatus.notStarted;\n        }\n\n        this._startTime = value.startTime?.getTime();\n        this._endTime = value.endTime?.getTime();\n        break;\n      case 'complete':\n        this.status = TimerStatus.complete;\n        break;\n      case 'indeterminate':\n        this.status = TimerStatus.indeterminate;\n        break;\n    }\n\n    this.resetStatus();\n  }\n\n  private resetStatus(): void {\n    switch (this.status) {\n      case TimerStatus.notStarted:\n        this.timerAngle = 360;\n        break;\n      case TimerStatus.started:\n      case TimerStatus.overtime: {\n        const elapsedTime = this._startTime ? Date.now() - this._startTime : 0;\n        const msLeft = this._duration - elapsedTime;\n\n        this.timeLeft = {\n          hours: Math.floor(Math.abs(msLeft) / 3600000),\n          minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),\n          seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)\n        };\n\n        if (elapsedTime > this._duration) {\n          this.status = TimerStatus.overtime;\n          this.timerAngle = 0;\n        } else {\n          this.timerAngle = elapsedTime * 360 / this._duration;\n        }\n\n        setTimeout(this.resetStatus, 250);\n\n        break;\n      }\n      case TimerStatus.complete:\n        this.timerAngle = 0;\n        this.timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n\n        break;\n      case TimerStatus.indeterminate:\n        this.timerAngle = 360;\n        break;\n    }\n  }\n}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": "$translucent-white: rgba(255, 255, 255, 0.8);\r\n$transparent-white: rgba(255, 255, 255, 0);\r\n\r\n:host {\r\n  --timer-angle: 360deg;\r\n}\r\n\r\ndiv.status-container{\r\n  width: 200px;\r\n  height: 200px;\r\n  &::after {\r\n    content: \"\";\r\n    z-index: 1;\r\n    position: absolute;\r\n    left: 0;\r\n    top: 0;\r\n    right: 0;\r\n    bottom: 0;\r\n    background: conic-gradient(\r\n      $transparent-white,\r\n      $transparent-white var(--timer-angle),\r\n      $translucent-white var(--timer-angle),\r\n      $translucent-white\r\n    );\r\n    transition: all;\r\n  }\r\n}\r\n",
+                    "styleUrl": "./timer.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "accessors": {
+                "timer": {
+                    "name": "timer",
+                    "setSignature": {
+                        "name": "timer",
+                        "type": "void",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "args": [
+                            {
+                                "name": "value",
+                                "type": "Timer",
+                                "deprecated": false,
+                                "deprecationMessage": ""
+                            }
+                        ],
+                        "returnType": "void",
+                        "line": 51,
+                        "jsdoctags": [
+                            {
+                                "name": "value",
+                                "type": "Timer",
+                                "deprecated": false,
+                                "deprecationMessage": "",
+                                "tagName": {
+                                    "text": "param"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "templateData": "<div\n  class=\"status-container\"\n  [class.--timer-angle.deg]=\"timerAngle\">\n  <ng-content></ng-content>\n</div>\n"
+        }
+    ],
+    "modules": [],
+    "miscellaneous": {
+        "variables": [
+            {
+                "name": "Primary",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/shared/src/lib/status/status.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\n  render: (args: StatusComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
+            },
+            {
+                "name": "Primary",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/shared/src/lib/timer/timer.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\n  render: (args: TimerComponent) => ({\n    props: args,\n    template: `<time-tracker-timer><img width=\"200\" height=\"200\" src=\"https://openclipart.org/image/800px/23996\" /></time-tracker-timer>`\n  }),\n  args: {\n    timer: {\n      type: 'countdown',\n      startTime: new Date(Date.now()),\n      duration: 120000\n    },\n  },\n}"
+            }
+        ],
+        "functions": [],
+        "typealiases": [
+            {
+                "name": "TimeLeft",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "literal type",
+                "file": "libs/shared/src/lib/timer/timer.component.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 184
+            }
+        ],
+        "enumerations": [],
+        "groupedVariables": {
+            "libs/shared/src/lib/status/status.component.stories.ts": [
+                {
+                    "name": "Primary",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/shared/src/lib/status/status.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\n  render: (args: StatusComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
+                }
+            ],
+            "libs/shared/src/lib/timer/timer.component.stories.ts": [
+                {
+                    "name": "Primary",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/shared/src/lib/timer/timer.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\n  render: (args: TimerComponent) => ({\n    props: args,\n    template: `<time-tracker-timer><img width=\"200\" height=\"200\" src=\"https://openclipart.org/image/800px/23996\" /></time-tracker-timer>`\n  }),\n  args: {\n    timer: {\n      type: 'countdown',\n      startTime: new Date(Date.now()),\n      duration: 120000\n    },\n  },\n}"
+                }
+            ]
+        },
+        "groupedFunctions": {},
+        "groupedEnumerations": {},
+        "groupedTypeAliases": {
+            "libs/shared/src/lib/timer/timer.component.ts": [
+                {
+                    "name": "TimeLeft",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "literal type",
+                    "file": "libs/shared/src/lib/timer/timer.component.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 184
+                }
+            ]
+        }
+    },
+    "routes": [],
+    "coverage": {
+        "count": 0,
+        "status": "low",
+        "files": [
+            {
+                "filePath": "libs/shared/src/lib/status/status.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Primary",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/shared/src/lib/status/status.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "StatusComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/shared/src/lib/timer/timer.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Primary",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/shared/src/lib/timer/timer.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "TimerComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/3",
+                "status": "low"
+            }
+        ]
+    }
+}

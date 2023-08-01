@@ -105,9 +105,7 @@
         "browserTarget": "time-tracker:build",
         "compodoc": true,
         "compodocArgs": ["-e", "json", "-d", "apps/time-tracker"],
-        "styles": [
-          "apps/time-tracker/src/styles.scss"
-        ]
+        "styles": ["apps/time-tracker/src/styles.scss"]
       },
       "configurations": {
         "ci": {
@@ -124,9 +122,7 @@
         "browserTarget": "time-tracker:build",
         "compodoc": true,
         "compodocArgs": ["-e", "json", "-d", "apps/time-tracker"],
-        "styles": [
-          "apps/time-tracker/src/styles.scss"
-        ]
+        "styles": ["apps/time-tracker/src/styles.scss"]
       },
       "configurations": {
         "ci": {

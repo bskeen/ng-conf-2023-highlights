@@ -14,7 +14,11 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@time-tracker/manage-status": ["libs/manage-status/src/index.ts"],
+      "@time-tracker/shared": ["libs/shared/src/index.ts"],
+      "@time-tracker/view-status": ["libs/view-status/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
