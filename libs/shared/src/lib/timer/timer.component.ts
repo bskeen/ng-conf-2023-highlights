@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, ElementRef, Input, AfterContentInit } from '@angular/core';
 import { Timer, TimerStatus } from './timer.models';
 
 type TimeLeft = {
@@ -12,7 +12,7 @@ type TimeLeft = {
   templateUrl: './timer.component.html',
   styleUrls: ['./timer.component.scss'],
 })
-export class TimerComponent {
+export class TimerComponent implements AfterContentInit {
   /**
    * @ignore
    */
@@ -36,7 +36,21 @@ export class TimerComponent {
   /**
    * @ignore
    */
-  timerAngle = 360;
+  timerLength = 0;
+
+  get mainTimerLength() {
+    return Math.min(this.timerLength / this._duration, 1) * this.totalLength;
+  }
+
+  get overtimeTimerLength() {
+    return Math.min(Math.max(this.timerLength - this._duration, 0) / this._duration, 1) * this.totalLength;
+  }
+
+  /**
+   * @ignore
+   * stores the circumference of the circle based on the contents of the component
+   */
+  totalLength = 0;
 
   /**
    * @ignore
@@ -44,10 +58,19 @@ export class TimerComponent {
   timeLeft: TimeLeft = {
     hours: 0,
     minutes: 0,
-    seconds: 0
+    seconds: 0,
   };
 
   timerStatus = TimerStatus;
+
+  constructor(private element: ElementRef<HTMLDivElement>) { }
+
+  /**
+   * @ignore
+   */
+  ngAfterContentInit(): void {
+    this.totalLength = Math.PI * this.element.nativeElement.clientWidth;
+  }
 
   @Input()
   set timer(value: Timer) {
@@ -79,17 +102,32 @@ export class TimerComponent {
     this.resetStatus();
   }
 
+  /**
+   * @ignore
+   * I actually would suggest calling this "tick", since it's not necessarily
+   * doing much with resetting the status except for in very few instances;
+   * additionally, since you suggest that this is a dumb component, the
+   * ticking probably should exist and be managed on a timer object and this
+   * updates with the changes in that object
+   */
   private resetStatus = (): void => {
-    console.log('reset status reached!');
-
     switch (this.status) {
       case TimerStatus.notStarted:
-        this.timerAngle = 360;
+        this.timerLength = 0;
         break;
       case TimerStatus.started:
       case TimerStatus.overtime: {
-        const elapsedTime = this._startTime ? Date.now() - this._startTime : 0;
-        const msLeft = this._duration - elapsedTime;
+        // most of the counting here was changed from counting down from 360 to counting up
+        this.timerLength = this._startTime ? Date.now() - this._startTime : 0;
+        const msLeft = this._duration - this.timerLength;
+
+        // this probably should be taken out of this component if it's supposed to be dumb/display-only...
+        if (this.timerLength - this._duration >= 0 && this.status != TimerStatus.overtime) {
+          this.status = TimerStatus.overtime;
+        }
+        else if (this.timerLength >= this._duration * 2) {
+          this.status = TimerStatus.complete;
+        }
 
         this.timeLeft = {
           hours: Math.floor(Math.abs(msLeft) / 3600000),
@@ -97,19 +135,15 @@ export class TimerComponent {
           seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)
         };
 
-        if (elapsedTime > this._duration) {
-          this.status = TimerStatus.overtime;
-          this.timerAngle = Math.abs(msLeft) > this._duration ? 0 : 360 - Math.abs(msLeft) * 360 / this._duration;
-        } else {
-          this.timerAngle = msLeft * 360 / this._duration;
-        }
-
-        setTimeout(this.resetStatus, 250);
+        // using `requestAnimationFrame` because the `setTimeout` was
+        // still making it look choppy and despite being set to 250ms,
+        // it was only ticking once per second; this smoothed it out
+        // dramatically
+        requestAnimationFrame(this.resetStatus);
 
         break;
       }
       case TimerStatus.complete:
-        this.timerAngle = 0;
         this.timeLeft = {
           hours: 0,
           minutes: 0,
@@ -118,7 +152,7 @@ export class TimerComponent {
 
         break;
       case TimerStatus.indeterminate:
-        this.timerAngle = 360;
+        this.timerLength = 0;
         this.timeLeft = {
           hours: 0,
           minutes: 0,
