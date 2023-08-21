@@ -52,7 +52,7 @@
         },
         {
             "name": "TimerComponent",
-            "id": "component-TimerComponent-a7696974465f834722275aa397892817a3e24ba95dc7882f0d9879eae053e8d3d302131b9f1bbffbef573d4c90f2b59c2dbda36fe41816ed31a6f1900a17e802",
+            "id": "component-TimerComponent-9e3a6f3f9b1a1ace6f88b704031f69e5499626cb3e6d0bc4151062b606c319e31cf0aa9e04e6a582135696002a649ebc0bd370b640af3a8443de70ddabb9337f",
             "file": "libs/shared/src/lib/timer/timer.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -74,28 +74,25 @@
                     "name": "timer",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 51,
+                    "line": 76,
                     "type": "Timer",
                     "decorators": []
                 }
             ],
             "outputsClass": [],
-            "propertiesClass": [],
-            "methodsClass": [
+            "propertiesClass": [
                 {
-                    "name": "resetStatus",
-                    "args": [],
-                    "optional": false,
-                    "returnType": "void",
-                    "typeParameters": [],
-                    "line": 78,
+                    "name": "timerStatus",
+                    "defaultValue": "TimerStatus",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "modifierKind": [
-                        121
-                    ]
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 64
                 }
             ],
+            "methodsClass": [],
             "deprecated": false,
             "deprecationMessage": "",
             "hostBindings": [],
@@ -105,16 +102,63 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { Timer, TimerStatus } from './timer.models';\n\ntype TimeLeft = {\n  hours: number;\n  minutes: number;\n  seconds: number;\n}\n\n@Component({\n  selector: 'time-tracker-timer',\n  templateUrl: './timer.component.html',\n  styleUrls: ['./timer.component.scss'],\n})\nexport class TimerComponent {\n  /**\n   * @ignore\n   */\n  _startTime?: number;\n\n  /**\n   * @ignore\n   */\n  _endTime?: number;\n\n  /**\n   * @ignore\n   */\n  _duration = 0;\n\n  /**\n   * @ignore\n   */\n  status: TimerStatus = TimerStatus.indeterminate;\n\n  /**\n   * @ignore\n   */\n  timerAngle = 360;\n\n  /**\n   * @ignore\n   */\n  timeLeft: TimeLeft = {\n    hours: 0,\n    minutes: 0,\n    seconds: 0\n  };\n\n  @Input()\n  set timer(value: Timer) {\n    switch (value.type) {\n      case 'countdown':\n        if (value.endTime) {\n          this.status = TimerStatus.complete;\n        } else if (value.startTime && Date.now() - value.startTime.getTime() > value.duration) {\n          this.status = TimerStatus.overtime;\n        } else if (value.startTime) {\n          this.status = TimerStatus.started;\n        } else {\n          this.status = TimerStatus.notStarted;\n        }\n\n        this._startTime = value.startTime?.getTime();\n        this._endTime = value.endTime?.getTime();\n        break;\n      case 'complete':\n        this.status = TimerStatus.complete;\n        break;\n      case 'indeterminate':\n        this.status = TimerStatus.indeterminate;\n        break;\n    }\n\n    this.resetStatus();\n  }\n\n  private resetStatus(): void {\n    switch (this.status) {\n      case TimerStatus.notStarted:\n        this.timerAngle = 360;\n        break;\n      case TimerStatus.started:\n      case TimerStatus.overtime: {\n        const elapsedTime = this._startTime ? Date.now() - this._startTime : 0;\n        const msLeft = this._duration - elapsedTime;\n\n        this.timeLeft = {\n          hours: Math.floor(Math.abs(msLeft) / 3600000),\n          minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),\n          seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)\n        };\n\n        if (elapsedTime > this._duration) {\n          this.status = TimerStatus.overtime;\n          this.timerAngle = 0;\n        } else {\n          this.timerAngle = elapsedTime * 360 / this._duration;\n        }\n\n        setTimeout(this.resetStatus, 250);\n\n        break;\n      }\n      case TimerStatus.complete:\n        this.timerAngle = 0;\n        this.timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n\n        break;\n      case TimerStatus.indeterminate:\n        this.timerAngle = 360;\n        break;\n    }\n  }\n}\n",
+            "sourceCode": "import { Component, ElementRef, Input, AfterContentInit } from '@angular/core';\nimport { Timer, TimerStatus } from './timer.models';\n\ntype TimeLeft = {\n  hours: number;\n  minutes: number;\n  seconds: number;\n}\n\n@Component({\n  selector: 'time-tracker-timer',\n  templateUrl: './timer.component.html',\n  styleUrls: ['./timer.component.scss'],\n})\nexport class TimerComponent implements AfterContentInit {\n  /**\n   * @ignore\n   */\n  _startTime?: number;\n\n  /**\n   * @ignore\n   */\n  _endTime?: number;\n\n  /**\n   * @ignore\n   */\n  _duration = 0;\n\n  /**\n   * @ignore\n   */\n  status: TimerStatus = TimerStatus.indeterminate;\n\n  /**\n   * @ignore\n   */\n  timerLength = 0;\n\n  get mainTimerLength() {\n    return Math.min(this.timerLength / this._duration, 1) * this.totalLength;\n  }\n\n  get overtimeTimerLength() {\n    return Math.min(Math.max(this.timerLength - this._duration, 0) / this._duration, 1) * this.totalLength;\n  }\n\n  /**\n   * @ignore\n   * stores the circumference of the circle based on the contents of the component\n   */\n  totalLength = 0;\n\n  /**\n   * @ignore\n   */\n  timeLeft: TimeLeft = {\n    hours: 0,\n    minutes: 0,\n    seconds: 0,\n  };\n\n  timerStatus = TimerStatus;\n\n  constructor(private element: ElementRef<HTMLDivElement>) { }\n\n  /**\n   * @ignore\n   */\n  ngAfterContentInit(): void {\n    this.totalLength = Math.PI * this.element.nativeElement.clientWidth;\n  }\n\n  @Input()\n  set timer(value: Timer) {\n    console.log('set timer reached!');\n    switch (value.type) {\n      case 'countdown':\n        if (value.endTime) {\n          this.status = TimerStatus.complete;\n        } else if (value.startTime && Date.now() - value.startTime.getTime() > value.duration) {\n          this.status = TimerStatus.overtime;\n        } else if (value.startTime) {\n          this.status = TimerStatus.started;\n        } else {\n          this.status = TimerStatus.notStarted;\n        }\n\n        this._startTime = value.startTime?.getTime();\n        this._endTime = value.endTime?.getTime();\n        this._duration = value.duration;\n        break;\n      case 'complete':\n        this.status = TimerStatus.complete;\n        break;\n      case 'indeterminate':\n        this.status = TimerStatus.indeterminate;\n        break;\n    }\n\n    this.resetStatus();\n  }\n\n  /**\n   * @ignore\n   * I actually would suggest calling this \"tick\", since it's not necessarily\n   * doing much with resetting the status except for in very few instances\n   */\n  private resetStatus = (): void => {\n    switch (this.status) {\n      case TimerStatus.notStarted:\n        this.timerLength = 0;\n        break;\n      case TimerStatus.started:\n      case TimerStatus.overtime: {\n        // most of the counting here was changed from counting down from 360 to counting up\n        this.timerLength = this._startTime ? Date.now() - this._startTime : 0;\n        const msLeft = this._duration - this.timerLength;\n\n        // this probably should be taken out of this component if it's supposed to be dumb/display-only...\n        if (this.timerLength - this._duration >= 0 && this.status != TimerStatus.overtime) {\n          this.status = TimerStatus.overtime;\n        }\n        else if (this.timerLength >= this._duration * 2) {\n          this.status = TimerStatus.complete;\n        }\n\n        this.timeLeft = {\n          hours: Math.floor(Math.abs(msLeft) / 3600000),\n          minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),\n          seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)\n        };\n\n        // using `requestAnimationFrame` because the `setTimeout` was\n        // still making it look choppy and despite being set to 250ms,\n        // it was only ticking once per second; this smoothed it out\n        // dramatically\n        requestAnimationFrame(this.resetStatus);\n\n        break;\n      }\n      case TimerStatus.complete:\n        this.timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n\n        break;\n      case TimerStatus.indeterminate:\n        this.timerLength = 0;\n        this.timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n        break;\n    }\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": [
                 {
-                    "data": "$translucent-white: rgba(255, 255, 255, 0.8);\r\n$transparent-white: rgba(255, 255, 255, 0);\r\n\r\n:host {\r\n  --timer-angle: 360deg;\r\n}\r\n\r\ndiv.status-container{\r\n  width: 200px;\r\n  height: 200px;\r\n  &::after {\r\n    content: \"\";\r\n    z-index: 1;\r\n    position: absolute;\r\n    left: 0;\r\n    top: 0;\r\n    right: 0;\r\n    bottom: 0;\r\n    background: conic-gradient(\r\n      $transparent-white,\r\n      $transparent-white var(--timer-angle),\r\n      $translucent-white var(--timer-angle),\r\n      $translucent-white\r\n    );\r\n    transition: all;\r\n  }\r\n}\r\n",
+                    "data": "$translucent-white: rgba(255, 255, 255, 0.8);\r\n$transparent-white: rgba(255, 255, 255, 0);\r\n$translucent-red: rgba(255, 0, 0, 0.8);\r\n\r\n:host {\r\n  --main-timer-length: 0;\r\n  --overtime-timer-length: 0;\r\n  --total-length: 942.278;\r\n  display: block;\r\n  width: max-content;\r\n\r\n  ::ng-deep .status-container > :not(svg) {\r\n    position: absolute;\r\n    left: 50%;\r\n    top: 50%;\r\n    transform: translate(-50%, -50%);\r\n  }\r\n}\r\n\r\n.status-container {\r\n  position: relative;\r\n  width: max-content;\r\n  height: max-content;\r\n\r\n  circle {\r\n    fill: transparent;\r\n    stroke-width: 300px;\r\n    border-radius: 50%;\r\n    transform: rotate(-90deg);\r\n    transition: stroke-dasharray linear 100ms;\r\n  }\r\n\r\n  svg {\r\n    transform: scaleX(-1);\r\n    position: relative;\r\n    border-radius: 50%;\r\n    overflow: hidden;\r\n  }\r\n\r\n  .main {\r\n    stroke-dasharray: var(--main-timer-length) var(--total-length);\r\n    stroke: $translucent-white;\r\n  }\r\n  .overtime {\r\n    stroke-dasharray: var(--overtime-timer-length) var(--total-length);\r\n    stroke: $translucent-red;\r\n  }\r\n}\r\n",
                     "styleUrl": "./timer.component.scss"
                 }
             ],
             "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "element",
+                        "type": "ElementRef<HTMLDivElement>",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 64,
+                "jsdoctags": [
+                    {
+                        "name": "element",
+                        "type": "ElementRef<HTMLDivElement>",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
+            "implements": [
+                "AfterContentInit"
+            ],
             "accessors": {
+                "mainTimerLength": {
+                    "name": "mainTimerLength",
+                    "getSignature": {
+                        "name": "mainTimerLength",
+                        "type": "",
+                        "returnType": "",
+                        "line": 41
+                    }
+                },
+                "overtimeTimerLength": {
+                    "name": "overtimeTimerLength",
+                    "getSignature": {
+                        "name": "overtimeTimerLength",
+                        "type": "",
+                        "returnType": "",
+                        "line": 45
+                    }
+                },
                 "timer": {
                     "name": "timer",
                     "setSignature": {
@@ -131,7 +175,7 @@
                             }
                         ],
                         "returnType": "void",
-                        "line": 51,
+                        "line": 76,
                         "jsdoctags": [
                             {
                                 "name": "value",
@@ -146,7 +190,7 @@
                     }
                 }
             },
-            "templateData": "<div\n  class=\"status-container\"\n  [class.--timer-angle.deg]=\"timerAngle\">\n  <ng-content></ng-content>\n</div>\n"
+            "templateData": "<div\n  class=\"status-container\"\n  [class.overtime]=\"status === timerStatus.overtime\"\n  [style.--main-timer-length]=\"mainTimerLength\"\n  [style.--overtime-timer-length]=\"overtimeTimerLength\"\n  [style.--total-length]=\"totalLength\">\n<!-- <div\n  class=\"status-container\"\n  [class.overtime]=\"status === timerStatus.overtime\"> -->\n  <ng-content></ng-content>\n  <svg width=\"300\" height=\"300\">\n    <defs>\n      <circle id=\"circle-overlay\" r=\"150\"></circle>\n    </defs>\n\n    <use x=\"150\" y=\"150\" href=\"#circle-overlay\" class=\"main\" />\n    <use x=\"150\" y=\"150\" href=\"#circle-overlay\" class=\"overtime\" />\n  </svg>\n</div>\n"
         }
     ],
     "modules": [],
@@ -170,7 +214,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "object",
-                "defaultValue": "{\n  render: (args: TimerComponent) => ({\n    props: args,\n    template: `<time-tracker-timer><img width=\"200\" height=\"200\" src=\"https://openclipart.org/image/800px/23996\" /></time-tracker-timer>`\n  }),\n  args: {\n    timer: {\n      type: 'countdown',\n      startTime: new Date(Date.now()),\n      duration: 120000\n    },\n  },\n}"
+                "defaultValue": "{\n  render: (args: TimerComponent) => ({\n    props: args,\n    template: `<time-tracker-timer [timer]=\"timer\"><img width=\"200\" height=\"200\" src=\"https://yt3.ggpht.com/a-/AAuE7mC75lyDOGkH_0L4_ZR6F4bfGviFjsMZIGa22w=s900-mo-c-c0xffffffff-rj-k-no\" /></time-tracker-timer>`\n  }),\n  args: {\n    timer: {\n      type: 'countdown',\n      startTime: new Date(Date.now()),\n      duration: 30000\n    },\n  },\n}"
             }
         ],
         "functions": [],
@@ -210,7 +254,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "object",
-                    "defaultValue": "{\n  render: (args: TimerComponent) => ({\n    props: args,\n    template: `<time-tracker-timer><img width=\"200\" height=\"200\" src=\"https://openclipart.org/image/800px/23996\" /></time-tracker-timer>`\n  }),\n  args: {\n    timer: {\n      type: 'countdown',\n      startTime: new Date(Date.now()),\n      duration: 120000\n    },\n  },\n}"
+                    "defaultValue": "{\n  render: (args: TimerComponent) => ({\n    props: args,\n    template: `<time-tracker-timer [timer]=\"timer\"><img width=\"200\" height=\"200\" src=\"https://yt3.ggpht.com/a-/AAuE7mC75lyDOGkH_0L4_ZR6F4bfGviFjsMZIGa22w=s900-mo-c-c0xffffffff-rj-k-no\" /></time-tracker-timer>`\n  }),\n  args: {\n    timer: {\n      type: 'countdown',\n      startTime: new Date(Date.now()),\n      duration: 30000\n    },\n  },\n}"
                 }
             ]
         },
@@ -272,7 +316,7 @@
                 "linktype": "component",
                 "name": "TimerComponent",
                 "coveragePercent": 0,
-                "coverageCount": "0/3",
+                "coverageCount": "0/4",
                 "status": "low"
             }
         ]

@@ -1,6 +1,16 @@
 <div
   class="status-container"
   [class.overtime]="status === timerStatus.overtime"
-  [style.--timer-angle.deg]="timerAngle">
+  [style.--main-timer-length]="mainTimerLength"
+  [style.--overtime-timer-length]="overtimeTimerLength"
+  [style.--total-length]="totalLength">
   <ng-content></ng-content>
+  <svg width="300" height="300">
+    <defs>
+      <circle id="circle-overlay" r="150"></circle>
+    </defs>
+
+    <use x="150" y="150" href="#circle-overlay" class="main" />
+    <use x="150" y="150" href="#circle-overlay" class="overtime" />
+  </svg>
 </div>
