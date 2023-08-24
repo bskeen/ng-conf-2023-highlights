@@ -104,7 +104,7 @@ export class TimerComponent implements AfterContentInit {
         break;
     }
 
-    this.resetStatus();
+    this._recalculate();
   }
 
   /**
@@ -115,7 +115,7 @@ export class TimerComponent implements AfterContentInit {
    * ticking probably should exist and be managed on a timer object and this
    * updates with the changes in that object
    */
-  private resetStatus = (): void => {
+  private _recalculate = (): void => {
     switch (this._status) {
       case TimerStatus.notStarted:
         this._timerLength = 0;
@@ -146,7 +146,7 @@ export class TimerComponent implements AfterContentInit {
         // still making it look choppy and despite being set to 250ms,
         // it was only ticking once per second; this smoothed it out
         // dramatically
-        requestAnimationFrame(this.resetStatus);
+        requestAnimationFrame(this._recalculate);
 
         break;
       }
