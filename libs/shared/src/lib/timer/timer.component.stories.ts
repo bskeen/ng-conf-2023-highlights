@@ -1,9 +1,17 @@
-import { Meta } from '@storybook/angular';
+import { Meta, moduleMetadata } from '@storybook/angular';
 import { TimerComponent } from './timer.component';
+import { MatCardModule } from '@angular/material/card';
 
 export default {
   title: 'TimerComponent',
   component: TimerComponent,
+  decorators: [
+    moduleMetadata({
+      imports: [
+        MatCardModule
+      ]
+    })
+  ]
 } as Meta<TimerComponent>;
 
 export const Primary = {
@@ -15,7 +23,7 @@ export const Primary = {
     timer: {
       type: 'countdown',
       startTime: new Date(Date.now()),
-      duration: 30000
+      duration: 10000
     },
   },
 };

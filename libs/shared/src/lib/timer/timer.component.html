@@ -1,19 +1,28 @@
-<div>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      {{_statusDescription}}
+    </mat-card-title>
+    <mat-card-subtitle role="timer">
+      {{_timeLeft.hours | number: '2.0-0'}}:{{_timeLeft.minutes | number: '2.0-0'}}:{{_timeLeft.seconds | number: '2.0-0'}}
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <div
+      class="status-container"
+      [class.overtime]="_status === _timerStatus.overtime"
+      [style.--main-timer-length]="_mainTimerLength"
+      [style.--overtime-timer-length]="_overtimeTimerLength"
+      [style.--total-length]="_totalLength">
+      <ng-content></ng-content>
+      <svg width="300" height="300">
+        <defs>
+          <circle id="circle-overlay" r="150"></circle>
+        </defs>
 
-</div>
-<div
-  class="status-container"
-  [class.overtime]="_status === _timerStatus.overtime"
-  [style.--main-timer-length]="_mainTimerLength"
-  [style.--overtime-timer-length]="_overtimeTimerLength"
-  [style.--total-length]="_totalLength">
-  <ng-content></ng-content>
-  <svg width="300" height="300">
-    <defs>
-      <circle id="circle-overlay" r="150"></circle>
-    </defs>
-
-    <use x="150" y="150" href="#circle-overlay" class="main" />
-    <use x="150" y="150" href="#circle-overlay" class="overtime" />
-  </svg>
-</div>
+        <use x="150" y="150" href="#circle-overlay" class="main" />
+        <use x="150" y="150" href="#circle-overlay" class="overtime" />
+      </svg>
+    </div>
+  </mat-card-content>
+</mat-card>

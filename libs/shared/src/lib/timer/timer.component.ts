@@ -33,6 +33,8 @@ export class TimerComponent implements AfterContentInit {
    */
   _status: TimerStatus = TimerStatus.indeterminate;
 
+  _statusDescription = 'Loading...';
+
   /**
    * @ignore
    */
@@ -83,12 +85,16 @@ export class TimerComponent implements AfterContentInit {
       case 'countdown':
         if (value.endTime) {
           this._status = TimerStatus.complete;
+          this._statusDescription = 'Complete';
         } else if (value.startTime && Date.now() - value.startTime.getTime() > value.duration) {
           this._status = TimerStatus.overtime;
+          this._statusDescription = 'Time Over:';
         } else if (value.startTime) {
           this._status = TimerStatus.started;
+          this._statusDescription = 'Time Left:';
         } else {
           this._status = TimerStatus.notStarted;
+          this._statusDescription = 'Not Started';
         }
 
         this._startTime = value.startTime?.getTime();
@@ -98,9 +104,11 @@ export class TimerComponent implements AfterContentInit {
         break;
       case 'complete':
         this._status = TimerStatus.complete;
+        this._statusDescription = 'Complete';
         break;
       case 'indeterminate':
         this._status = TimerStatus.indeterminate;
+        this._statusDescription = 'Loading...';
         break;
     }
 
@@ -129,18 +137,24 @@ export class TimerComponent implements AfterContentInit {
         const msLeft = this._duration - this._timerLength;
 
         // this probably should be taken out of this component if it's supposed to be dumb/display-only...
-        if (this._timerLength - this._duration >= 0 && this._status != TimerStatus.overtime) {
-          this._status = TimerStatus.overtime;
-        }
-        else if (this._timerLength >= this._duration * 2) {
-          this._status = TimerStatus.complete;
-        }
+        if (this._timerLength - this._duration >= 0) {
+          if (this._status != TimerStatus.overtime) {
+            this._status = TimerStatus.overtime;
+            this._statusDescription = 'Time Over:';
+          }
 
-        this._timeLeft = {
-          hours: Math.floor(Math.abs(msLeft) / 3600000),
-          minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),
-          seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)
-        };
+          this._timeLeft = {
+            hours: Math.floor(Math.abs(msLeft) / 3600000),
+            minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),
+            seconds: Math.ceil((Math.abs(msLeft) % 60000) / 1000)
+          };
+        } else {
+          this._timeLeft = {
+            hours: Math.floor(Math.abs(msLeft) / 3600000),
+            minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),
+            seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)
+          };
+        }
 
         // using `requestAnimationFrame` because the `setTimeout` was
         // still making it look choppy and despite being set to 250ms,
