@@ -1,6 +1,7 @@
-$translucent-white: rgba(255, 255, 255, 0.8);
-$transparent-white: rgba(255, 255, 255, 0);
-$translucent-red: rgba(255, 0, 0, 0.8);
+$opacity: 0.7;
+$translucent-gray: rgba(192, 192, 192, $opacity);
+$transparent-gray: rgba(192, 192, 192, 0);
+$translucent-red: rgba(255, 0, 0, $opacity);
 
 :host {
   --main-timer-length: 0;
@@ -39,7 +40,7 @@ $translucent-red: rgba(255, 0, 0, 0.8);
 
   .main {
     stroke-dasharray: var(--main-timer-length) var(--total-length);
-    stroke: $translucent-white;
+    stroke: $translucent-gray;
   }
   .overtime {
     stroke-dasharray: var(--overtime-timer-length) var(--total-length);

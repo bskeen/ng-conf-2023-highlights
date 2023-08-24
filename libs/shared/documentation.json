@@ -1,6 +1,48 @@
 {
     "pipes": [],
-    "interfaces": [],
+    "interfaces": [
+        {
+            "name": "TimeLeft",
+            "id": "interface-TimeLeft-176bb76f4fc1af2d206d9840a61048d4f52f41bdb39bd84574316bae63041dc43e2dfb19be5f7218a1b12a9d5dd80f1dad4997cf0097ed5b0519e988e675cc12",
+            "file": "libs/shared/src/lib/timer/timer.component.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "import { Component, ElementRef, Input, AfterContentInit } from '@angular/core';\nimport { Timer, TimerStatus } from './timer.models';\n\ninterface TimeLeft {\n  hours: number;\n  minutes: number;\n  seconds: number;\n}\n\n@Component({\n  selector: 'time-tracker-timer',\n  templateUrl: './timer.component.html',\n  styleUrls: ['./timer.component.scss'],\n})\nexport class TimerComponent implements AfterContentInit {\n  /**\n   * @ignore\n   */\n  _startTime?: number;\n\n  /**\n   * @ignore\n   */\n  _endTime?: number;\n\n  /**\n   * @ignore\n   */\n  _duration = 0;\n\n  /**\n   * @ignore\n   */\n  _status: TimerStatus = TimerStatus.indeterminate;\n\n  /**\n   * @ignore\n   */\n  _timerLength = 0;\n\n  _mainTimerLength = 0;\n\n  _overtimeTimerLength = 0;\n\n  // get mainTimerLength() {\n  //   return\n  // }\n\n  // get overtimeTimerLength() {\n  //   return\n  // }\n\n  /**\n   * @ignore\n   * stores the circumference of the circle based on the contents of the component\n   */\n  _totalLength = 0;\n\n  /**\n   * @ignore\n   */\n  _timeLeft: TimeLeft = {\n    hours: 0,\n    minutes: 0,\n    seconds: 0,\n  };\n\n  _timerStatus = TimerStatus;\n\n  constructor(private element: ElementRef<HTMLDivElement>) { }\n\n  /**\n   * @ignore\n   */\n  ngAfterContentInit(): void {\n    this._totalLength = Math.PI * this.element.nativeElement.clientWidth;\n    this.resetTimerLengths();\n  }\n\n  @Input()\n  set timer(value: Timer) {\n    console.log('set timer reached!');\n    switch (value.type) {\n      case 'countdown':\n        if (value.endTime) {\n          this._status = TimerStatus.complete;\n        } else if (value.startTime && Date.now() - value.startTime.getTime() > value.duration) {\n          this._status = TimerStatus.overtime;\n        } else if (value.startTime) {\n          this._status = TimerStatus.started;\n        } else {\n          this._status = TimerStatus.notStarted;\n        }\n\n        this._startTime = value.startTime?.getTime();\n        this._endTime = value.endTime?.getTime();\n        this._duration = value.duration;\n        this.resetTimerLengths();\n        break;\n      case 'complete':\n        this._status = TimerStatus.complete;\n        break;\n      case 'indeterminate':\n        this._status = TimerStatus.indeterminate;\n        break;\n    }\n\n    this.resetStatus();\n  }\n\n  /**\n   * @ignore\n   * I actually would suggest calling this \"tick\", since it's not necessarily\n   * doing much with resetting the status except for in very few instances;\n   * additionally, since you suggest that this is a dumb component, the\n   * ticking probably should exist and be managed on a timer object and this\n   * updates with the changes in that object\n   */\n  private resetStatus = (): void => {\n    switch (this._status) {\n      case TimerStatus.notStarted:\n        this._timerLength = 0;\n        this.resetTimerLengths();\n        break;\n      case TimerStatus.started:\n      case TimerStatus.overtime: {\n        // most of the counting here was changed from counting down from 360 to counting up\n        this._timerLength = this._startTime ? Date.now() - this._startTime : 0;\n        this.resetTimerLengths();\n        const msLeft = this._duration - this._timerLength;\n\n        // this probably should be taken out of this component if it's supposed to be dumb/display-only...\n        if (this._timerLength - this._duration >= 0 && this._status != TimerStatus.overtime) {\n          this._status = TimerStatus.overtime;\n        }\n        else if (this._timerLength >= this._duration * 2) {\n          this._status = TimerStatus.complete;\n        }\n\n        this._timeLeft = {\n          hours: Math.floor(Math.abs(msLeft) / 3600000),\n          minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),\n          seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)\n        };\n\n        // using `requestAnimationFrame` because the `setTimeout` was\n        // still making it look choppy and despite being set to 250ms,\n        // it was only ticking once per second; this smoothed it out\n        // dramatically\n        requestAnimationFrame(this.resetStatus);\n\n        break;\n      }\n      case TimerStatus.complete:\n        this._timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n\n        break;\n      case TimerStatus.indeterminate:\n        this._timerLength = 0;\n        this.resetTimerLengths();\n        this._timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n        break;\n    }\n  }\n\n  resetTimerLengths(): void {\n    const nonzeroDuration = this._duration ? this._duration : 1;\n    this._mainTimerLength = Math.min(this._timerLength / nonzeroDuration, 1) * this._totalLength;\n    this._overtimeTimerLength = Math.min(Math.max(this._timerLength - this._duration, 0) / nonzeroDuration, 1) * this._totalLength;\n  }\n}\n",
+            "properties": [
+                {
+                    "name": "hours",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "optional": false,
+                    "description": "",
+                    "line": 5
+                },
+                {
+                    "name": "minutes",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "optional": false,
+                    "description": "",
+                    "line": 6
+                },
+                {
+                    "name": "seconds",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "optional": false,
+                    "description": "",
+                    "line": 7
+                }
+            ],
+            "indexSignatures": [],
+            "kind": 168,
+            "methods": []
+        }
+    ],
     "injectables": [],
     "guards": [],
     "interceptors": [],
@@ -52,7 +94,7 @@
         },
         {
             "name": "TimerComponent",
-            "id": "component-TimerComponent-9e3a6f3f9b1a1ace6f88b704031f69e5499626cb3e6d0bc4151062b606c319e31cf0aa9e04e6a582135696002a649ebc0bd370b640af3a8443de70ddabb9337f",
+            "id": "component-TimerComponent-176bb76f4fc1af2d206d9840a61048d4f52f41bdb39bd84574316bae63041dc43e2dfb19be5f7218a1b12a9d5dd80f1dad4997cf0097ed5b0519e988e675cc12",
             "file": "libs/shared/src/lib/timer/timer.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -74,7 +116,7 @@
                     "name": "timer",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 76,
+                    "line": 81,
                     "type": "Timer",
                     "decorators": []
                 }
@@ -82,17 +124,48 @@
             "outputsClass": [],
             "propertiesClass": [
                 {
-                    "name": "timerStatus",
+                    "name": "_mainTimerLength",
+                    "defaultValue": "0",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "optional": false,
+                    "description": "",
+                    "line": 41
+                },
+                {
+                    "name": "_overtimeTimerLength",
+                    "defaultValue": "0",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "number",
+                    "optional": false,
+                    "description": "",
+                    "line": 43
+                },
+                {
+                    "name": "_timerStatus",
                     "defaultValue": "TimerStatus",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "",
                     "optional": false,
                     "description": "",
-                    "line": 64
+                    "line": 68
                 }
             ],
-            "methodsClass": [],
+            "methodsClass": [
+                {
+                    "name": "resetTimerLengths",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 174,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
             "deprecated": false,
             "deprecationMessage": "",
             "hostBindings": [],
@@ -102,7 +175,7 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, ElementRef, Input, AfterContentInit } from '@angular/core';\nimport { Timer, TimerStatus } from './timer.models';\n\ntype TimeLeft = {\n  hours: number;\n  minutes: number;\n  seconds: number;\n}\n\n@Component({\n  selector: 'time-tracker-timer',\n  templateUrl: './timer.component.html',\n  styleUrls: ['./timer.component.scss'],\n})\nexport class TimerComponent implements AfterContentInit {\n  /**\n   * @ignore\n   */\n  _startTime?: number;\n\n  /**\n   * @ignore\n   */\n  _endTime?: number;\n\n  /**\n   * @ignore\n   */\n  _duration = 0;\n\n  /**\n   * @ignore\n   */\n  status: TimerStatus = TimerStatus.indeterminate;\n\n  /**\n   * @ignore\n   */\n  timerLength = 0;\n\n  get mainTimerLength() {\n    return Math.min(this.timerLength / this._duration, 1) * this.totalLength;\n  }\n\n  get overtimeTimerLength() {\n    return Math.min(Math.max(this.timerLength - this._duration, 0) / this._duration, 1) * this.totalLength;\n  }\n\n  /**\n   * @ignore\n   * stores the circumference of the circle based on the contents of the component\n   */\n  totalLength = 0;\n\n  /**\n   * @ignore\n   */\n  timeLeft: TimeLeft = {\n    hours: 0,\n    minutes: 0,\n    seconds: 0,\n  };\n\n  timerStatus = TimerStatus;\n\n  constructor(private element: ElementRef<HTMLDivElement>) { }\n\n  /**\n   * @ignore\n   */\n  ngAfterContentInit(): void {\n    this.totalLength = Math.PI * this.element.nativeElement.clientWidth;\n  }\n\n  @Input()\n  set timer(value: Timer) {\n    console.log('set timer reached!');\n    switch (value.type) {\n      case 'countdown':\n        if (value.endTime) {\n          this.status = TimerStatus.complete;\n        } else if (value.startTime && Date.now() - value.startTime.getTime() > value.duration) {\n          this.status = TimerStatus.overtime;\n        } else if (value.startTime) {\n          this.status = TimerStatus.started;\n        } else {\n          this.status = TimerStatus.notStarted;\n        }\n\n        this._startTime = value.startTime?.getTime();\n        this._endTime = value.endTime?.getTime();\n        this._duration = value.duration;\n        break;\n      case 'complete':\n        this.status = TimerStatus.complete;\n        break;\n      case 'indeterminate':\n        this.status = TimerStatus.indeterminate;\n        break;\n    }\n\n    this.resetStatus();\n  }\n\n  /**\n   * @ignore\n   * I actually would suggest calling this \"tick\", since it's not necessarily\n   * doing much with resetting the status except for in very few instances\n   */\n  private resetStatus = (): void => {\n    switch (this.status) {\n      case TimerStatus.notStarted:\n        this.timerLength = 0;\n        break;\n      case TimerStatus.started:\n      case TimerStatus.overtime: {\n        // most of the counting here was changed from counting down from 360 to counting up\n        this.timerLength = this._startTime ? Date.now() - this._startTime : 0;\n        const msLeft = this._duration - this.timerLength;\n\n        // this probably should be taken out of this component if it's supposed to be dumb/display-only...\n        if (this.timerLength - this._duration >= 0 && this.status != TimerStatus.overtime) {\n          this.status = TimerStatus.overtime;\n        }\n        else if (this.timerLength >= this._duration * 2) {\n          this.status = TimerStatus.complete;\n        }\n\n        this.timeLeft = {\n          hours: Math.floor(Math.abs(msLeft) / 3600000),\n          minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),\n          seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)\n        };\n\n        // using `requestAnimationFrame` because the `setTimeout` was\n        // still making it look choppy and despite being set to 250ms,\n        // it was only ticking once per second; this smoothed it out\n        // dramatically\n        requestAnimationFrame(this.resetStatus);\n\n        break;\n      }\n      case TimerStatus.complete:\n        this.timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n\n        break;\n      case TimerStatus.indeterminate:\n        this.timerLength = 0;\n        this.timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n        break;\n    }\n  }\n}\n",
+            "sourceCode": "import { Component, ElementRef, Input, AfterContentInit } from '@angular/core';\nimport { Timer, TimerStatus } from './timer.models';\n\ninterface TimeLeft {\n  hours: number;\n  minutes: number;\n  seconds: number;\n}\n\n@Component({\n  selector: 'time-tracker-timer',\n  templateUrl: './timer.component.html',\n  styleUrls: ['./timer.component.scss'],\n})\nexport class TimerComponent implements AfterContentInit {\n  /**\n   * @ignore\n   */\n  _startTime?: number;\n\n  /**\n   * @ignore\n   */\n  _endTime?: number;\n\n  /**\n   * @ignore\n   */\n  _duration = 0;\n\n  /**\n   * @ignore\n   */\n  _status: TimerStatus = TimerStatus.indeterminate;\n\n  /**\n   * @ignore\n   */\n  _timerLength = 0;\n\n  _mainTimerLength = 0;\n\n  _overtimeTimerLength = 0;\n\n  // get mainTimerLength() {\n  //   return\n  // }\n\n  // get overtimeTimerLength() {\n  //   return\n  // }\n\n  /**\n   * @ignore\n   * stores the circumference of the circle based on the contents of the component\n   */\n  _totalLength = 0;\n\n  /**\n   * @ignore\n   */\n  _timeLeft: TimeLeft = {\n    hours: 0,\n    minutes: 0,\n    seconds: 0,\n  };\n\n  _timerStatus = TimerStatus;\n\n  constructor(private element: ElementRef<HTMLDivElement>) { }\n\n  /**\n   * @ignore\n   */\n  ngAfterContentInit(): void {\n    this._totalLength = Math.PI * this.element.nativeElement.clientWidth;\n    this.resetTimerLengths();\n  }\n\n  @Input()\n  set timer(value: Timer) {\n    console.log('set timer reached!');\n    switch (value.type) {\n      case 'countdown':\n        if (value.endTime) {\n          this._status = TimerStatus.complete;\n        } else if (value.startTime && Date.now() - value.startTime.getTime() > value.duration) {\n          this._status = TimerStatus.overtime;\n        } else if (value.startTime) {\n          this._status = TimerStatus.started;\n        } else {\n          this._status = TimerStatus.notStarted;\n        }\n\n        this._startTime = value.startTime?.getTime();\n        this._endTime = value.endTime?.getTime();\n        this._duration = value.duration;\n        this.resetTimerLengths();\n        break;\n      case 'complete':\n        this._status = TimerStatus.complete;\n        break;\n      case 'indeterminate':\n        this._status = TimerStatus.indeterminate;\n        break;\n    }\n\n    this.resetStatus();\n  }\n\n  /**\n   * @ignore\n   * I actually would suggest calling this \"tick\", since it's not necessarily\n   * doing much with resetting the status except for in very few instances;\n   * additionally, since you suggest that this is a dumb component, the\n   * ticking probably should exist and be managed on a timer object and this\n   * updates with the changes in that object\n   */\n  private resetStatus = (): void => {\n    switch (this._status) {\n      case TimerStatus.notStarted:\n        this._timerLength = 0;\n        this.resetTimerLengths();\n        break;\n      case TimerStatus.started:\n      case TimerStatus.overtime: {\n        // most of the counting here was changed from counting down from 360 to counting up\n        this._timerLength = this._startTime ? Date.now() - this._startTime : 0;\n        this.resetTimerLengths();\n        const msLeft = this._duration - this._timerLength;\n\n        // this probably should be taken out of this component if it's supposed to be dumb/display-only...\n        if (this._timerLength - this._duration >= 0 && this._status != TimerStatus.overtime) {\n          this._status = TimerStatus.overtime;\n        }\n        else if (this._timerLength >= this._duration * 2) {\n          this._status = TimerStatus.complete;\n        }\n\n        this._timeLeft = {\n          hours: Math.floor(Math.abs(msLeft) / 3600000),\n          minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),\n          seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)\n        };\n\n        // using `requestAnimationFrame` because the `setTimeout` was\n        // still making it look choppy and despite being set to 250ms,\n        // it was only ticking once per second; this smoothed it out\n        // dramatically\n        requestAnimationFrame(this.resetStatus);\n\n        break;\n      }\n      case TimerStatus.complete:\n        this._timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n\n        break;\n      case TimerStatus.indeterminate:\n        this._timerLength = 0;\n        this.resetTimerLengths();\n        this._timeLeft = {\n          hours: 0,\n          minutes: 0,\n          seconds: 0\n        };\n        break;\n    }\n  }\n\n  resetTimerLengths(): void {\n    const nonzeroDuration = this._duration ? this._duration : 1;\n    this._mainTimerLength = Math.min(this._timerLength / nonzeroDuration, 1) * this._totalLength;\n    this._overtimeTimerLength = Math.min(Math.max(this._timerLength - this._duration, 0) / nonzeroDuration, 1) * this._totalLength;\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": [
                 {
@@ -124,7 +197,7 @@
                         "deprecationMessage": ""
                     }
                 ],
-                "line": 64,
+                "line": 68,
                 "jsdoctags": [
                     {
                         "name": "element",
@@ -141,24 +214,6 @@
                 "AfterContentInit"
             ],
             "accessors": {
-                "mainTimerLength": {
-                    "name": "mainTimerLength",
-                    "getSignature": {
-                        "name": "mainTimerLength",
-                        "type": "",
-                        "returnType": "",
-                        "line": 41
-                    }
-                },
-                "overtimeTimerLength": {
-                    "name": "overtimeTimerLength",
-                    "getSignature": {
-                        "name": "overtimeTimerLength",
-                        "type": "",
-                        "returnType": "",
-                        "line": 45
-                    }
-                },
                 "timer": {
                     "name": "timer",
                     "setSignature": {
@@ -175,7 +230,7 @@
                             }
                         ],
                         "returnType": "void",
-                        "line": 76,
+                        "line": 81,
                         "jsdoctags": [
                             {
                                 "name": "value",
@@ -190,7 +245,7 @@
                     }
                 }
             },
-            "templateData": "<div\n  class=\"status-container\"\n  [class.overtime]=\"status === timerStatus.overtime\"\n  [style.--main-timer-length]=\"mainTimerLength\"\n  [style.--overtime-timer-length]=\"overtimeTimerLength\"\n  [style.--total-length]=\"totalLength\">\n<!-- <div\n  class=\"status-container\"\n  [class.overtime]=\"status === timerStatus.overtime\"> -->\n  <ng-content></ng-content>\n  <svg width=\"300\" height=\"300\">\n    <defs>\n      <circle id=\"circle-overlay\" r=\"150\"></circle>\n    </defs>\n\n    <use x=\"150\" y=\"150\" href=\"#circle-overlay\" class=\"main\" />\n    <use x=\"150\" y=\"150\" href=\"#circle-overlay\" class=\"overtime\" />\n  </svg>\n</div>\n"
+            "templateData": "<div\n  class=\"status-container\"\n  [class.overtime]=\"_status === _timerStatus.overtime\"\n  [style.--main-timer-length]=\"_mainTimerLength\"\n  [style.--overtime-timer-length]=\"_overtimeTimerLength\"\n  [style.--total-length]=\"_totalLength\">\n  <ng-content></ng-content>\n  <svg width=\"300\" height=\"300\">\n    <defs>\n      <circle id=\"circle-overlay\" r=\"150\"></circle>\n    </defs>\n\n    <use x=\"150\" y=\"150\" href=\"#circle-overlay\" class=\"main\" />\n    <use x=\"150\" y=\"150\" href=\"#circle-overlay\" class=\"overtime\" />\n  </svg>\n</div>\n"
         }
     ],
     "modules": [],
@@ -200,51 +255,27 @@
                 "name": "Primary",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "libs/shared/src/lib/status/status.component.stories.ts",
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "object",
-                "defaultValue": "{\n  render: (args: StatusComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
-            },
-            {
-                "name": "Primary",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
                 "file": "libs/shared/src/lib/timer/timer.component.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "object",
                 "defaultValue": "{\n  render: (args: TimerComponent) => ({\n    props: args,\n    template: `<time-tracker-timer [timer]=\"timer\"><img width=\"200\" height=\"200\" src=\"https://yt3.ggpht.com/a-/AAuE7mC75lyDOGkH_0L4_ZR6F4bfGviFjsMZIGa22w=s900-mo-c-c0xffffffff-rj-k-no\" /></time-tracker-timer>`\n  }),\n  args: {\n    timer: {\n      type: 'countdown',\n      startTime: new Date(Date.now()),\n      duration: 30000\n    },\n  },\n}"
+            },
+            {
+                "name": "Primary",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "libs/shared/src/lib/status/status.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\n  render: (args: StatusComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
             }
         ],
         "functions": [],
-        "typealiases": [
-            {
-                "name": "TimeLeft",
-                "ctype": "miscellaneous",
-                "subtype": "typealias",
-                "rawtype": "literal type",
-                "file": "libs/shared/src/lib/timer/timer.component.ts",
-                "deprecated": false,
-                "deprecationMessage": "",
-                "description": "",
-                "kind": 184
-            }
-        ],
+        "typealiases": [],
         "enumerations": [],
         "groupedVariables": {
-            "libs/shared/src/lib/status/status.component.stories.ts": [
-                {
-                    "name": "Primary",
-                    "ctype": "miscellaneous",
-                    "subtype": "variable",
-                    "file": "libs/shared/src/lib/status/status.component.stories.ts",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "object",
-                    "defaultValue": "{\n  render: (args: StatusComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
-                }
-            ],
             "libs/shared/src/lib/timer/timer.component.stories.ts": [
                 {
                     "name": "Primary",
@@ -256,25 +287,23 @@
                     "type": "object",
                     "defaultValue": "{\n  render: (args: TimerComponent) => ({\n    props: args,\n    template: `<time-tracker-timer [timer]=\"timer\"><img width=\"200\" height=\"200\" src=\"https://yt3.ggpht.com/a-/AAuE7mC75lyDOGkH_0L4_ZR6F4bfGviFjsMZIGa22w=s900-mo-c-c0xffffffff-rj-k-no\" /></time-tracker-timer>`\n  }),\n  args: {\n    timer: {\n      type: 'countdown',\n      startTime: new Date(Date.now()),\n      duration: 30000\n    },\n  },\n}"
                 }
+            ],
+            "libs/shared/src/lib/status/status.component.stories.ts": [
+                {
+                    "name": "Primary",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "libs/shared/src/lib/status/status.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\n  render: (args: StatusComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
+                }
             ]
         },
         "groupedFunctions": {},
         "groupedEnumerations": {},
-        "groupedTypeAliases": {
-            "libs/shared/src/lib/timer/timer.component.ts": [
-                {
-                    "name": "TimeLeft",
-                    "ctype": "miscellaneous",
-                    "subtype": "typealias",
-                    "rawtype": "literal type",
-                    "file": "libs/shared/src/lib/timer/timer.component.ts",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "description": "",
-                    "kind": 184
-                }
-            ]
-        }
+        "groupedTypeAliases": {}
     },
     "routes": [],
     "coverage": {
@@ -315,6 +344,15 @@
                 "type": "component",
                 "linktype": "component",
                 "name": "TimerComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/7",
+                "status": "low"
+            },
+            {
+                "filePath": "libs/shared/src/lib/timer/timer.component.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "TimeLeft",
                 "coveragePercent": 0,
                 "coverageCount": "0/4",
                 "status": "low"

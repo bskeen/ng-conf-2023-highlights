@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, AfterContentInit } from '@angular/core';
 import { Timer, TimerStatus } from './timer.models';
 
-type TimeLeft = {
+interface TimeLeft {
   hours: number;
   minutes: number;
   seconds: number;
@@ -31,37 +31,40 @@ export class TimerComponent implements AfterContentInit {
   /**
    * @ignore
    */
-  status: TimerStatus = TimerStatus.indeterminate;
+  _status: TimerStatus = TimerStatus.indeterminate;
 
   /**
    * @ignore
    */
-  timerLength = 0;
-
-  get mainTimerLength() {
-    return Math.min(this.timerLength / this._duration, 1) * this.totalLength;
-  }
-
-  get overtimeTimerLength() {
-    return Math.min(Math.max(this.timerLength - this._duration, 0) / this._duration, 1) * this.totalLength;
-  }
-
-  /**
-   * @ignore
-   * stores the circumference of the circle based on the contents of the component
-   */
-  totalLength = 0;
+  _timerLength = 0;
 
   /**
    * @ignore
    */
-  timeLeft: TimeLeft = {
+  _mainTimerLength = 0;
+
+  /**
+   * @ignore
+   */
+  _overtimeTimerLength = 0;
+
+  /**
+   * Stores the circumference of the circle based on the contents of the component
+   *
+   * @ignore
+   */
+  _totalLength = 0;
+
+  /**
+   * @ignore
+   */
+  _timeLeft: TimeLeft = {
     hours: 0,
     minutes: 0,
     seconds: 0,
   };
 
-  timerStatus = TimerStatus;
+  _timerStatus = TimerStatus;
 
   constructor(private element: ElementRef<HTMLDivElement>) { }
 
@@ -69,7 +72,8 @@ export class TimerComponent implements AfterContentInit {
    * @ignore
    */
   ngAfterContentInit(): void {
-    this.totalLength = Math.PI * this.element.nativeElement.clientWidth;
+    this._totalLength = Math.PI * this.element.nativeElement.clientWidth;
+    this._resetTimerLengths();
   }
 
   @Input()
@@ -78,24 +82,25 @@ export class TimerComponent implements AfterContentInit {
     switch (value.type) {
       case 'countdown':
         if (value.endTime) {
-          this.status = TimerStatus.complete;
+          this._status = TimerStatus.complete;
         } else if (value.startTime && Date.now() - value.startTime.getTime() > value.duration) {
-          this.status = TimerStatus.overtime;
+          this._status = TimerStatus.overtime;
         } else if (value.startTime) {
-          this.status = TimerStatus.started;
+          this._status = TimerStatus.started;
         } else {
-          this.status = TimerStatus.notStarted;
+          this._status = TimerStatus.notStarted;
         }
 
         this._startTime = value.startTime?.getTime();
         this._endTime = value.endTime?.getTime();
         this._duration = value.duration;
+        this._resetTimerLengths();
         break;
       case 'complete':
-        this.status = TimerStatus.complete;
+        this._status = TimerStatus.complete;
         break;
       case 'indeterminate':
-        this.status = TimerStatus.indeterminate;
+        this._status = TimerStatus.indeterminate;
         break;
     }
 
@@ -111,25 +116,27 @@ export class TimerComponent implements AfterContentInit {
    * updates with the changes in that object
    */
   private resetStatus = (): void => {
-    switch (this.status) {
+    switch (this._status) {
       case TimerStatus.notStarted:
-        this.timerLength = 0;
+        this._timerLength = 0;
+        this._resetTimerLengths();
         break;
       case TimerStatus.started:
       case TimerStatus.overtime: {
         // most of the counting here was changed from counting down from 360 to counting up
-        this.timerLength = this._startTime ? Date.now() - this._startTime : 0;
-        const msLeft = this._duration - this.timerLength;
+        this._timerLength = this._startTime ? Date.now() - this._startTime : 0;
+        this._resetTimerLengths();
+        const msLeft = this._duration - this._timerLength;
 
         // this probably should be taken out of this component if it's supposed to be dumb/display-only...
-        if (this.timerLength - this._duration >= 0 && this.status != TimerStatus.overtime) {
-          this.status = TimerStatus.overtime;
+        if (this._timerLength - this._duration >= 0 && this._status != TimerStatus.overtime) {
+          this._status = TimerStatus.overtime;
         }
-        else if (this.timerLength >= this._duration * 2) {
-          this.status = TimerStatus.complete;
+        else if (this._timerLength >= this._duration * 2) {
+          this._status = TimerStatus.complete;
         }
 
-        this.timeLeft = {
+        this._timeLeft = {
           hours: Math.floor(Math.abs(msLeft) / 3600000),
           minutes: Math.floor((Math.abs(msLeft) % 3600000) / 60000),
           seconds: Math.floor((Math.abs(msLeft) % 60000) / 1000)
@@ -144,7 +151,7 @@ export class TimerComponent implements AfterContentInit {
         break;
       }
       case TimerStatus.complete:
-        this.timeLeft = {
+        this._timeLeft = {
           hours: 0,
           minutes: 0,
           seconds: 0
@@ -152,13 +159,23 @@ export class TimerComponent implements AfterContentInit {
 
         break;
       case TimerStatus.indeterminate:
-        this.timerLength = 0;
-        this.timeLeft = {
+        this._timerLength = 0;
+        this._resetTimerLengths();
+        this._timeLeft = {
           hours: 0,
           minutes: 0,
           seconds: 0
         };
         break;
     }
+  }
+
+  /**
+   * @ignore
+   */
+  _resetTimerLengths(): void {
+    const nonzeroDuration = this._duration ? this._duration : 1;
+    this._mainTimerLength = Math.min(this._timerLength / nonzeroDuration, 1) * this._totalLength;
+    this._overtimeTimerLength = Math.min(Math.max(this._timerLength - this._duration, 0) / nonzeroDuration, 1) * this._totalLength;
   }
 }

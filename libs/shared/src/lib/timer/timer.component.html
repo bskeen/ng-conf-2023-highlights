@@ -1,9 +1,9 @@
 <div
   class="status-container"
-  [class.overtime]="status === timerStatus.overtime"
-  [style.--main-timer-length]="mainTimerLength"
-  [style.--overtime-timer-length]="overtimeTimerLength"
-  [style.--total-length]="totalLength">
+  [class.overtime]="_status === _timerStatus.overtime"
+  [style.--main-timer-length]="_mainTimerLength"
+  [style.--overtime-timer-length]="_overtimeTimerLength"
+  [style.--total-length]="_totalLength">
   <ng-content></ng-content>
   <svg width="300" height="300">
     <defs>
